@@ -21,7 +21,7 @@
                 "vt": "str"
             }
         ],
-        "repeat": "5",
+        "repeat": "10",
         "crontab": "",
         "once": false,
         "onceDelay": 0.1,
@@ -29,12 +29,11 @@
         "payload": "",
         "payloadType": "date",
         "x": 130,
-        "y": 360,
+        "y": 300,
         "wires": [
             [
                 "34b498b78608123d",
-                "586301cc069df021",
-                "77ff3102115b525d"
+                "586301cc069df021"
             ]
         ]
     },
@@ -169,27 +168,11 @@
         ]
     },
     {
-        "id": "6d8095785d4b61aa",
-        "type": "debug",
-        "z": "8c6873fcba03a0d9",
-        "name": "debug 1",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "false",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 540,
-        "y": 580,
-        "wires": []
-    },
-    {
         "id": "955653e561dfffb5",
         "type": "function",
         "z": "8c6873fcba03a0d9",
         "name": "Convert to object",
-        "func": "var high_temp = msg.payload[0];\nvar high_hum = msg.payload[1];\nvar over_voltage = msg.payload[2];\nvar under_voltage = msg.payload[3];\nvar over_current = msg.payload[4];\n\nmsg.payload = {\n    \"high_temperature\" : high_temp,\n    \"high_humidity\" : high_hum,\n    \"over_voltage\" : over_voltage,\n    \"under_voltage\" : under_voltage,\n    \"over_current\" : over_current\n};\n\nreturn msg;",
+        "func": "var high_temp = msg.payload[0];\nvar high_hum = msg.payload[1];\nvar over_voltage = msg.payload[2];\nvar under_voltage = msg.payload[3];\nvar over_current = msg.payload[4];\n\nvar timestamp = Math.floor(Date.now() / 1000);\n\nmsg.payload = {\n    \"high_temperature\" : high_temp,\n    \"high_humidity\" : high_hum,\n    \"over_voltage\" : over_voltage,\n    \"under_voltage\" : under_voltage,\n    \"over_current\" : over_current,\n    \"timestamp\" : timestamp\n};\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -200,8 +183,7 @@
         "y": 460,
         "wires": [
             [
-                "07b8cd480ec2243a",
-                "6d8095785d4b61aa"
+                "07b8cd480ec2243a"
             ]
         ]
     },
@@ -320,6 +302,35 @@
         "wires": [
             [
                 "6d03537250c8f5f0"
+            ]
+        ]
+    },
+    {
+        "id": "96c3979be95a6fac",
+        "type": "inject",
+        "z": "8c6873fcba03a0d9",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "1",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 150,
+        "y": 460,
+        "wires": [
+            [
+                "77ff3102115b525d"
             ]
         ]
     },
