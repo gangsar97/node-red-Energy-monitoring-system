@@ -1,0 +1,29 @@
+MODBUS ADDRESS
+
+INPUT REGISTER
+
+TEMPERATURE = 1
+HUMIDITY = 2
+
+HOLDING REGISTER
+
+VOLTAGE  = 101
+current = 103
+power_apparent = 105
+power_active = 107
+power_reactive = 109
+energy_active = 111
+energy_reactive = 113
+energy_apparent = 115
+frequency = 117
+power_factor = 119
+
+COIL FUNCTION
+
+high_temp_alarm = 201
+high_humidity_alarm = 202
+overvoltage_alarm = 203
+undervoltage_alarm = 204
+overcurrent_alarm = 205
+
+
