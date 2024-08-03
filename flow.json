@@ -1,0 +1,366 @@
+[
+    {
+        "id": "8c6873fcba03a0d9",
+        "type": "tab",
+        "label": "Flow 1",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "22caa5e18a85bde2",
+        "type": "inject",
+        "z": "8c6873fcba03a0d9",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "5",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 130,
+        "y": 360,
+        "wires": [
+            [
+                "34b498b78608123d",
+                "586301cc069df021",
+                "77ff3102115b525d"
+            ]
+        ]
+    },
+    {
+        "id": "34b498b78608123d",
+        "type": "modbus-getter",
+        "z": "8c6873fcba03a0d9",
+        "name": "Temp & Humi Sensor",
+        "showStatusActivities": false,
+        "showErrors": false,
+        "showWarnings": true,
+        "logIOActivities": false,
+        "unitid": "1",
+        "dataType": "InputRegister",
+        "adr": "1",
+        "quantity": "2",
+        "server": "a0ac23ba056c091e",
+        "useIOFile": false,
+        "ioFile": "",
+        "useIOForPayload": false,
+        "emptyMsgOnFail": false,
+        "keepMsgProperties": false,
+        "delayOnStart": false,
+        "startDelayTime": "",
+        "x": 380,
+        "y": 300,
+        "wires": [
+            [
+                "44e47e10887160be"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "586301cc069df021",
+        "type": "modbus-getter",
+        "z": "8c6873fcba03a0d9",
+        "name": "Power Meter",
+        "showStatusActivities": false,
+        "showErrors": false,
+        "showWarnings": true,
+        "logIOActivities": false,
+        "unitid": "1",
+        "dataType": "HoldingRegister",
+        "adr": "101",
+        "quantity": "18",
+        "server": "a0ac23ba056c091e",
+        "useIOFile": false,
+        "ioFile": "",
+        "useIOForPayload": false,
+        "emptyMsgOnFail": false,
+        "keepMsgProperties": false,
+        "delayOnStart": false,
+        "startDelayTime": "",
+        "x": 350,
+        "y": 380,
+        "wires": [
+            [
+                "d3d7572a76348475"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "44e47e10887160be",
+        "type": "function",
+        "z": "8c6873fcba03a0d9",
+        "name": "Convert Data",
+        "func": "var temperature = msg.payload[0]/10;\nvar humidity = msg.payload[1]/10;\n\nmsg.payload = {\n    \"temperature\": temperature,\n    \"humidity\" : humidity\n};\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 610,
+        "y": 300,
+        "wires": [
+            [
+                "d5fa3572f3a96237"
+            ]
+        ]
+    },
+    {
+        "id": "d3d7572a76348475",
+        "type": "function",
+        "z": "8c6873fcba03a0d9",
+        "name": "Convert Integer to Float",
+        "func": "var value = msg.payload.slice(0,18);\nvar combinedValue =[];\nvar floatValue =[];\n\nfor (var i=0;i<16;i++){\n    combinedValue[i] = (value[i*2+1]<<16) | value[i*2];\n\n    var buffer = new ArrayBuffer(4);\n    var intView = new Int32Array(buffer);\n    var floatView = new Float32Array(buffer);\n\n    intView[0] = combinedValue[i];\n    floatValue[i] = floatView[0];\n}\n\n\nvar voltage = floatValue[0];\nvar current = floatValue[1];\nvar power_apparent = floatValue[2];\nvar power_active = floatValue[3];\nvar power_reactive = floatValue[4];\nvar energy_active  =floatValue[5];\nvar energy_reactive = floatValue[6];\nvar energy_apparent = floatValue[7];\nvar frequency = floatValue[8];\nvar power_factor = floatValue[9];\n\nvar timestamp = Math.floor(Date.now() / 1000);\n\nmsg.payload = {\n    \"voltage\" : Math.round(voltage * 10)/10,\n    \"current\" : Math.round(current * 100)/100,\n    \"power_apparent\" : Math.round(power_apparent * 10)/10,\n    \"power_active\" : Math.round(power_active * 10)/10,\n    \"power_reactive\" : Math.round(power_reactive * 10)/10,\n    \"energy_apparent\": Math.round(energy_apparent * 10) / 10,\n    \"energy_active\": Math.round(energy_active * 10) / 10,\n    \"energy_reactive\": Math.round(energy_reactive * 10) / 10,\n    \"frequency\" : Math.round(frequency * 100)/100,\n    \"power_factor\" : Math.round(power_factor * 100)/100,\n    \"timestamp\" : timestamp\n};\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 610,
+        "y": 380,
+        "wires": [
+            [
+                "d5fa3572f3a96237"
+            ]
+        ]
+    },
+    {
+        "id": "77ff3102115b525d",
+        "type": "modbus-getter",
+        "z": "8c6873fcba03a0d9",
+        "name": "Alarm",
+        "showStatusActivities": false,
+        "showErrors": false,
+        "showWarnings": true,
+        "logIOActivities": false,
+        "unitid": "1",
+        "dataType": "Coil",
+        "adr": "201",
+        "quantity": "5",
+        "server": "a0ac23ba056c091e",
+        "useIOFile": false,
+        "ioFile": "",
+        "useIOForPayload": false,
+        "emptyMsgOnFail": false,
+        "keepMsgProperties": false,
+        "delayOnStart": false,
+        "startDelayTime": "",
+        "x": 330,
+        "y": 460,
+        "wires": [
+            [
+                "955653e561dfffb5"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "6d8095785d4b61aa",
+        "type": "debug",
+        "z": "8c6873fcba03a0d9",
+        "name": "debug 1",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 540,
+        "y": 580,
+        "wires": []
+    },
+    {
+        "id": "955653e561dfffb5",
+        "type": "function",
+        "z": "8c6873fcba03a0d9",
+        "name": "Convert to object",
+        "func": "var high_temp = msg.payload[0];\nvar high_hum = msg.payload[1];\nvar over_voltage = msg.payload[2];\nvar under_voltage = msg.payload[3];\nvar over_current = msg.payload[4];\n\nmsg.payload = {\n    \"high_temperature\" : high_temp,\n    \"high_humidity\" : high_hum,\n    \"over_voltage\" : over_voltage,\n    \"under_voltage\" : under_voltage,\n    \"over_current\" : over_current\n};\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 530,
+        "y": 460,
+        "wires": [
+            [
+                "07b8cd480ec2243a",
+                "6d8095785d4b61aa"
+            ]
+        ]
+    },
+    {
+        "id": "d5fa3572f3a96237",
+        "type": "join",
+        "z": "8c6873fcba03a0d9",
+        "name": "",
+        "mode": "custom",
+        "build": "merged",
+        "property": "payload",
+        "propertyType": "msg",
+        "key": "topic",
+        "joiner": "\\n",
+        "joinerType": "str",
+        "useparts": false,
+        "accumulate": true,
+        "timeout": "",
+        "count": "13",
+        "reduceRight": false,
+        "reduceExp": "",
+        "reduceInit": "",
+        "reduceInitType": "",
+        "reduceFixup": "",
+        "x": 860,
+        "y": 320,
+        "wires": [
+            [
+                "1f7f302ce46d3b27"
+            ]
+        ]
+    },
+    {
+        "id": "ddc168191ef4ea3d",
+        "type": "mysql",
+        "z": "8c6873fcba03a0d9",
+        "mydb": "64e2927a1176c1aa",
+        "name": "",
+        "x": 1240,
+        "y": 320,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "1f7f302ce46d3b27",
+        "type": "function",
+        "z": "8c6873fcba03a0d9",
+        "name": "Insert to database",
+        "func": "var temperature = msg.payload.temperature;\nvar humidity = msg.payload.humidity;\nvar voltage = msg.payload.voltage;\nvar current = msg.payload.current;\nvar power_apparent = msg.payload.power_apparent;\nvar power_active = msg.payload.power_active;\nvar power_reactive = msg.payload.power_reactive;\nvar energy_apparent = msg.payload.energy_apparent;\nvar energy_active = msg.payload.energy_active;\nvar energy_reactive = msg.payload.energy_reactive;\nvar frequency = msg.payload.frequency;\nvar power_factor = msg.payload.power_factor;\nvar timestamp = msg.payload.timestamp;\n\n\nmsg.topic = \"INSERT INTO monitoring(temperature, humidity, voltage, current, power_apparent, power_active, power_reactive, energy_apparent, energy_active, energy_reactive, frequency, power_factor, timestamp) VALUES (\"+temperature+\",\"+humidity+\",\"+voltage+\",\"+current+\",\"+power_apparent+\",\"+power_active+\",\"+power_reactive+\",\"+energy_apparent+\",\"+energy_active+\",\"+energy_reactive+\",\"+frequency+\",\"+power_factor+\",\"+timestamp+\")\";\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1050,
+        "y": 320,
+        "wires": [
+            [
+                "ddc168191ef4ea3d"
+            ]
+        ]
+    },
+    {
+        "id": "07b8cd480ec2243a",
+        "type": "function",
+        "z": "8c6873fcba03a0d9",
+        "name": "ALARM RECORD",
+        "func": "var high_temp = msg.payload.high_temperature;\nvar high_hum = msg.payload.high_humidity;\nvar over_voltage = msg.payload.over_voltage;\nvar under_voltage = msg.payload.under_voltage;\nvar over_current = msg.payload.over_current;\nvar timestamp = msg.payload.timestamp;\n\nif( high_temp == true || high_hum == true || over_voltage == true || under_voltage == true || over_current == true){\n    msg.topic = \"INSERT INTO alarm_record(high_temperature,high_humidity,over_voltage,under_voltage,over_current,timestamp) VALUES(\"+high_temp+\",\"+high_hum+\",\"+over_voltage+\",\"+under_voltage+\",\"+over_current+\",\"+timestamp+\")\";\n    return msg;\n}\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 730,
+        "y": 460,
+        "wires": [
+            [
+                "a29b768c272564dd"
+            ]
+        ]
+    },
+    {
+        "id": "6d03537250c8f5f0",
+        "type": "mysql",
+        "z": "8c6873fcba03a0d9",
+        "mydb": "64e2927a1176c1aa",
+        "name": "",
+        "x": 1140,
+        "y": 460,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "a29b768c272564dd",
+        "type": "delay",
+        "z": "8c6873fcba03a0d9",
+        "name": "",
+        "pauseType": "rate",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "minute",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": true,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 950,
+        "y": 460,
+        "wires": [
+            [
+                "6d03537250c8f5f0"
+            ]
+        ]
+    },
+    {
+        "id": "a0ac23ba056c091e",
+        "type": "modbus-client",
+        "name": "",
+        "clienttype": "tcp",
+        "bufferCommands": true,
+        "stateLogEnabled": false,
+        "queueLogEnabled": false,
+        "failureLogEnabled": true,
+        "tcpHost": "192.168.1.205",
+        "tcpPort": "502",
+        "tcpType": "DEFAULT",
+        "serialPort": "/dev/ttyUSB",
+        "serialType": "RTU-BUFFERD",
+        "serialBaudrate": "9600",
+        "serialDatabits": "8",
+        "serialStopbits": "1",
+        "serialParity": "none",
+        "serialConnectionDelay": "100",
+        "serialAsciiResponseStartDelimiter": "0x3A",
+        "unit_id": "1",
+        "commandDelay": "10",
+        "clientTimeout": "1000",
+        "reconnectOnTimeout": true,
+        "reconnectTimeout": "2000",
+        "parallelUnitIdsAllowed": true,
+        "showErrors": false,
+        "showWarnings": true,
+        "showLogs": true
+    },
+    {
+        "id": "64e2927a1176c1aa",
+        "type": "MySQLdatabase",
+        "name": "",
+        "host": "127.0.0.1",
+        "port": "3306",
+        "db": "ems_database",
+        "tz": "",
+        "charset": "UTF8"
+    }
+]
